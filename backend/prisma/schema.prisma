@@ -1,0 +1,119 @@
+// This is your Prisma schema file
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication
+model User {
+  id          String    @id @default(cuid())
+  email       String    @unique
+  password    String
+  fullName    String    @map("full_name")
+  role        String    @default("user") // "user" or "admin"
+  createdDate DateTime  @default(now()) @map("created_date") @db.Timestamp(6)
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+// Driver model - Matches MySQL backup exactly
+model Driver {
+  id             String    @id @db.VarChar(255)
+  driverName     String?   @map("driver_name") @db.VarChar(255)
+  driverNumber   String?   @map("driver_number") @db.VarChar(255)
+  phone          String?   @db.VarChar(255)
+  hourlyRate     Decimal?  @map("hourly_rate") @db.Decimal(10, 2)
+  overtimeRate   Decimal?  @map("overtime_rate") @db.Decimal(10, 2)
+  currency       String?   @db.VarChar(10)
+  assignedMonths String?   @map("assigned_months") @db.Text
+  createdDate    DateTime? @map("created_date") @db.Timestamp(6)
+  createdBy      String?   @map("created_by") @db.VarChar(255)
+  
+  expenses       Expense[]
+
+  @@map("drivers")
+}
+
+// Expense model - Matches MySQL backup exactly
+model Expense {
+  id           String    @id @db.VarChar(255)
+  expenseDate  DateTime? @map("expense_date") @db.Date
+  driverId     String?   @map("driver_id") @db.VarChar(255)
+  driverName   String?   @map("driver_name") @db.VarChar(255)
+  driverNumber String?   @map("driver_number") @db.VarChar(255)
+  expenseType  String?   @map("expense_type") @db.VarChar(255)
+  hours        Decimal?  @db.Decimal(10, 2)
+  hourlyRate   Decimal?  @map("hourly_rate") @db.Decimal(10, 2)
+  isOvertime   Boolean?  @map("is_overtime")
+  amount       Decimal?  @db.Decimal(10, 2)
+  currency     String?   @db.VarChar(10)
+  isPaid       Boolean?  @map("is_paid")
+  isDeleted    Boolean?  @map("is_deleted")
+  description  String?   @db.Text
+  createdDate  DateTime? @map("created_date") @db.Timestamp(6)
+  createdBy    String?   @map("created_by") @db.VarChar(255)
+  
+  driver       Driver?   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@map("expenses")
+}
+
+// Employee model - Matches MySQL backup exactly
+model Employee {
+  id             String    @id @db.VarChar(255)
+  employeeName   String?   @map("employee_name") @db.VarChar(255)
+  employeeNumber String?   @map("employee_number") @db.VarChar(255)
+  salary         Decimal?  @db.Decimal(10, 2)
+  currency       String?   @db.VarChar(10)
+  paymentDate    DateTime? @map("payment_date") @db.Date
+  isPaid         Boolean?  @map("is_paid")
+  assignedMonths String?   @map("assigned_months") @db.Text
+  createdDate    DateTime? @map("created_date") @db.Timestamp(6)
+  createdBy      String?   @map("created_by") @db.VarChar(255)
+
+  @@map("employees")
+}
+
+// ExpenseType model - Matches MySQL backup exactly
+model ExpenseType {
+  id          String    @id @db.VarChar(255)
+  typeName    String?   @map("type_name") @db.VarChar(255)
+  color       String?   @db.VarChar(50)
+  createdDate DateTime? @map("created_date") @db.Timestamp(6)
+  createdBy   String?   @map("created_by") @db.VarChar(255)
+
+  @@map("expense_types")
+}
+
+// AppSetting model - Matches MySQL backup exactly
+model AppSetting {
+  id              String    @id @db.VarChar(255)
+  settingKey      String?   @map("setting_key") @db.VarChar(255)
+  settingValue    String?   @map("setting_value") @db.Text
+  settingCategory String?   @map("setting_category") @db.VarChar(100)
+  description     String?   @db.Text
+  createdDate     DateTime? @map("created_date") @db.Timestamp(6)
+  createdBy       String?   @map("created_by") @db.VarChar(255)
+
+  @@map("app_settings")
+}
+
+// PrintTemplate model - Matches MySQL backup exactly
+model PrintTemplate {
+  id           String    @id @db.VarChar(255)
+  templateName String?   @map("template_name") @db.VarChar(255)
+  templateType String?   @map("template_type") @db.VarChar(100)
+  htmlContent  String?   @map("html_content") @db.Text
+  cssContent   String?   @map("css_content") @db.Text
+  isDefault    Boolean?  @map("is_default")
+  description  String?   @db.Text
+  createdDate  DateTime? @map("created_date") @db.Timestamp(6)
+  createdBy    String?   @map("created_by") @db.VarChar(255)
+
+  @@map("print_templates")
+}
